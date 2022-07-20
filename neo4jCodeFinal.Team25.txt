@@ -1,0 +1,159 @@
+//MATCH (n) DETACH DELETE n
+
+//----------------------------------INSERTS----------------------------------//
+
+//categories graph
+load csv with headers from "file:///categories.csv" as cat
+create (c:Categories) set 
+c = cat {
+    .name
+    };
+	
+//customers graph
+load csv with headers from "file:///customers.csv" as cust
+create (c:Customers) set 
+c = cust {
+    customer_id : toInteger(cust.customer_id),
+    fullName : toString(cust.fullName),
+    age : toInteger(cust.age),
+    latitude : toFloat(cust.latitude),
+    longitude : toFloat(cust.longitude),
+    female : toBoolean(cust.female),
+    male : toBoolean(cust.male)
+    };
+	
+//Restaurants graph
+load csv with headers from "file:///restaurants.csv" as rest
+create (r:Restaurants) set 
+r = rest {
+    rest_id : toInteger(rest.rest_id),
+    .name,
+    .address,
+    rate : toFloat(rest.rate),
+    latitude : toFloat(rest.latitude),
+    longitude : toFloat(rest.longitude),
+    street_Food : toBoolean(toInteger(rest.street_Food)),
+    mediterranean : toBoolean(toInteger(rest.mediterranean)),
+    homemade : toBoolean(toInteger(rest.homemade)),
+    italian : toBoolean(toInteger(rest.italian)),
+    pasta : toBoolean(toInteger(rest.pasta)),
+    burger : toBoolean(toInteger(rest.burger)),
+    mexican : toBoolean(toInteger(rest.mexican)),
+    salad : toBoolean(toInteger(rest.salad)),
+    vegan : toBoolean(toInteger(rest.vegan)),
+    vegetarian : toBoolean(toInteger(rest.vegetarian)),
+    wraps : toBoolean(toInteger(rest.wraps)),
+    kosher : toBoolean(toInteger(rest.kosher)),
+    breakfast : toBoolean(toInteger(rest.breakfast)),
+    sandwich : toBoolean(toInteger(rest.sandwich)),
+    soup : toBoolean(toInteger(rest.soup)),
+    french : toBoolean(toInteger(rest.french)),
+    hummus : toBoolean(toInteger(rest.hummus)),
+    dessert : toBoolean(toInteger(rest.dessert)),
+    bakery : toBoolean(toInteger(rest.bakery)),
+    sweets : toBoolean(toInteger(rest.sweets)),
+    steak : toBoolean(toInteger(rest.steak)),
+    pizza : toBoolean(toInteger(rest.pizza)),
+    asian : toBoolean(toInteger(rest.asian)),
+    meat : toBoolean(toInteger(rest.meat)),
+    ice_Cream : toBoolean(toInteger(rest.ice_Cream)),
+    smoothie : toBoolean(toInteger(rest.smoothie)),
+    cafe : toBoolean(toInteger(rest.cafe)),
+    healthy : toBoolean(toInteger(rest.healthy)),
+    american : toBoolean(toInteger(rest.american)),
+    indian : toBoolean(toInteger(rest.indian)),
+    fish : toBoolean(toInteger(rest.fish)),
+    thai : toBoolean(toInteger(rest.thai)),
+    kebab : toBoolean(toInteger(rest.kebab)),
+    sushi : toBoolean(toInteger(rest.sushi)),
+    japanese : toBoolean(toInteger(rest.japanese)),
+    bowl : toBoolean(toInteger(rest.bowl)),
+    kids : toBoolean(toInteger(rest.kids))
+    };
+	
+//orderDescription Graph	
+load csv with headers from "file:///orderDescription.csv" as ord_des
+create (c:Order_description) set 
+c = ord_des{
+    order_id: toFloat(ord_des.order_id),
+    rest_id : toInteger(ord_des.rest_id),
+    .name,
+    .description,
+    price : toFloat(ord_des.price),
+    items_id : toInteger(ord_des.items_id)
+    };
+	
+	//Orders Graph
+load csv with headers from "file:///orders.csv" as ord
+create (c:Orders) set 
+c = ord {
+    order_id:toFloat(ord.order_id),
+    rest_id:toInteger(ord.rest_id),
+    customer_id:toInteger(ord.customer_id),
+    datetime_placed:DateTime(ord.datetime_placed),
+    datetime_received:DateTime(ord.datetime_received),
+    total_price:toFloat(ord.total_price)
+    };
+	
+//-------------------------------REALTIONSHIPS-------------------------------//
+//Realtionship between Orders and Restaurants
+MATCH (o:Order_description)
+MATCH (r:Restaurants)
+WHERE o.rest_id = r.rest_id
+MERGE (o)-[:DISH_FROM]->(r)
+RETURN *;
+
+//Realtionship between Orders and Customers
+MATCH (o:Orders)
+MATCH (c:Customers)
+WHERE o.customer_id = c.customer_id 
+MERGE (c)-[:ORDERING]->(o)
+RETURN *;
+
+MATCH (o:Orders)
+MATCH (od:Order_description)
+WHERE o.order_id = od.order_id 
+MERGE (od)-[:DESCRIBES]->(o)
+RETURN *;
+
+MATCH (od:Restaurants)
+MATCH (c:Categories)
+WHERE (od.asian = true and c.name = "asian") or
+ 	  (od.vegan = true and c.name = "vegan") or
+ 	  (od.american = true and c.name = "american") or
+ 	  (od.homemade = true and c.name = "homemade") or
+ 	  (od.street_food = true and c.name = "street_food") or
+ 	  (od.italian = true and c.name = "italian") or
+ 	  (od.kids = true and c.name = "kids") or
+ 	  (od.fish = true and c.name = "fish") or
+ 	  (od.meat = true and c.name = "meat") or
+ 	  (od.hummus = true and c.name = "hummus") or
+ 	  (od.vegeterian = true and c.name = "vegeterian") or
+ 	  (od.salad = true and c.name = "salad") or
+ 	  (od.sandwich = true and c.name = "sandwich") or
+ 	  (od.dessert = true and c.name = "dessert") or
+	  (od.pasta = true and c.name ="pasta") or
+	  (od.burger = true and c.name ="burger") or
+	  (od.mediterranean = true and c.name ="mediterranean") or
+	  (od.mexican = true and c.name ="mexican") or
+	  (od.wraps = true and c.name ="wraps") or
+	  (od.kosher = true and c.name ="kosher") or
+	  (od.breakfast = true and c.name ="breakfast") or
+	  (od.soup = true and c.name ="soup") or
+	  (od.french = true and c.name ="french") or
+	  (od.bakery = true and c.name ="bakery") or
+	  (od.sweets = true and c.name ="sweets") or
+      (od.steak = true and c.name ="steak") or
+      (od.pizza = true and c.name ="pizza") or
+      (od.smoothie = true and c.name ="smoothie") or
+      (od.cafe = true and c.name ="cafe") or
+	  (od.healthy = true and c.name ="healthy") or
+	  (od.indian = true and c.name ="indian") or
+	  (od.thai = true and c.name ="thai") or
+	  (od.kebab = true and c.name ="kebab") or
+	  (od.sushi = true and c.name ="sushi") or
+	  (od.japanese = true and c.name ="japanese") or
+	  (od.bowl = true and c.name ="bowl") or
+	  (od.ice_Cream = true and c.name ="ice_Cream")
+MERGE (od)-[:RELATED_TO]->(c)
+RETURN *;
